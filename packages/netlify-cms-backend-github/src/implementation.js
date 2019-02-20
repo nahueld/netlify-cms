@@ -1,9 +1,38 @@
 import trimStart from 'lodash/trimStart';
 import semaphore from 'semaphore';
+import { stripIndent } from 'common-tags';
 import AuthenticationPage from './AuthenticationPage';
 import API from './API';
 
 const MAX_CONCURRENT_DOWNLOADS = 10;
+
+/**
+ * Keywords for inferring a status that will provide a deploy preview URL.
+ */
+const PREVIEW_CONTEXT_KEYWORDS = ['deploy'];
+
+/**
+ * Check a given status context string to determine if it provides a link to a
+ * deploy preview. Checks for an exact match against `previewContext` if given,
+ * otherwise checks for inclusion of a value from `PREVIEW_CONTEXT_KEYWORDS`.
+ */
+function isPreviewContext(context, previewContext) {
+  if (previewContext) {
+    return context === previewContext;
+  }
+  return PREVIEW_CONTEXT_KEYWORDS.some(keyword => context.includes(keyword));
+}
+
+/**
+ * Retrieve a deploy preview URL from an array of statuses. By default, a
+ * matching status is inferred via `isPreviewContext`.
+ */
+function getPreviewStatus(statuses, config) {
+  const previewContext = config.getIn(['backend', 'preview_context']);
+  return statuses.find(({ context }) => {
+    return isPreviewContext(context, previewContext);
+  });
+}
 
 export default class GitHub {
   constructor(config, options = {}) {
@@ -35,7 +64,7 @@ export default class GitHub {
     return this.authenticate(user);
   }
 
-  authenticate(state) {
+  async authenticate(state) {
     this.token = state.token;
     this.api = new API({
       token: this.token,
@@ -45,16 +74,28 @@ export default class GitHub {
       squash_merges: this.squash_merges,
       initialWorkflowStatus: this.options.initialWorkflowStatus,
     });
-    return this.api.user().then(user =>
-      this.api.hasWriteAccess().then(isCollab => {
-        // Unauthorized user
-        if (!isCollab)
-          throw new Error('Your GitHub user account does not have access to this repo.');
-        // Authorized user
-        user.token = state.token;
-        return user;
-      }),
-    );
+    const user = await this.api.user();
+    const isCollab = await this.api.hasWriteAccess().catch(error => {
+      error.message = stripIndent`
+        Repo "${this.repo}" not found.
+
+        Please ensure the repo information is spelled correctly.
+
+        If the repo is private, make sure you're logged into a GitHub account with access.
+
+        If your repo is under an organization, ensure the organization has granted access to Netlify
+        CMS.
+      `;
+      throw error;
+    });
+
+    // Unauthorized user
+    if (!isCollab) {
+      throw new Error('Your GitHub user account does not have access to this repo.');
+    }
+
+    // Authorized user
+    return { ...user, token: state.token };
   }
 
   logout() {
@@ -207,6 +248,28 @@ export default class GitHub {
         isModification: data.isModification,
       };
     });
+  }
+
+  /**
+   * Uses GitHub's Statuses API to retrieve statuses, infers which is for a
+   * deploy preview via `getPreviewStatus`. Returns the url provided by the
+   * status, as well as the status state, which should be one of 'success',
+   * 'pending', and 'failure'.
+   */
+  async getDeployPreview(collection, slug) {
+    const data = await this.api.retrieveMetadata(slug);
+
+    if (!data) {
+      return null;
+    }
+
+    const statuses = await this.api.getStatuses(data.pr.head);
+    const deployStatus = getPreviewStatus(statuses, this.config);
+
+    if (deployStatus) {
+      const { target_url, state } = deployStatus;
+      return { url: target_url, status: state };
+    }
   }
 
   updateUnpublishedEntryStatus(collection, slug, newStatus) {

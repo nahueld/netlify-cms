@@ -6,7 +6,7 @@ import { currentBackend } from 'src/backend';
 import { getAsset } from 'Reducers';
 import { selectFields } from 'Reducers/collections';
 import { EDITORIAL_WORKFLOW } from 'Constants/publishModes';
-import { EditorialWorkflowError } from 'netlify-cms-lib-util';
+import { EDITORIAL_WORKFLOW_ERROR } from 'netlify-cms-lib-util';
 import { loadEntry } from './entries';
 import ValidationErrorTypes from 'Constants/validationErrorTypes';
 
@@ -238,7 +238,7 @@ export function loadUnpublishedEntry(collection, slug) {
       .unpublishedEntry(collection, slug)
       .then(entry => dispatch(unpublishedEntryLoaded(collection, entry)))
       .catch(error => {
-        if (error instanceof EditorialWorkflowError && error.notUnderEditorialWorkflow) {
+        if (error.name === EDITORIAL_WORKFLOW_ERROR && error.notUnderEditorialWorkflow) {
           dispatch(unpublishedEntryRedirected(collection, slug));
           dispatch(loadEntry(collection, slug));
         } else {
@@ -366,6 +366,7 @@ export function persistUnpublishedEntry(collection, existingUnpublishedEntry) {
 
 export function updateUnpublishedEntryStatus(collection, slug, oldStatus, newStatus) {
   return (dispatch, getState) => {
+    if (oldStatus === newStatus) return;
     const state = getState();
     const backend = currentBackend(state.config);
     const transactionID = uuid();
@@ -444,6 +445,7 @@ export function deleteUnpublishedEntry(collection, slug) {
 export function publishUnpublishedEntry(collection, slug) {
   return (dispatch, getState) => {
     const state = getState();
+    const collections = state.collections;
     const backend = currentBackend(state.config);
     const transactionID = uuid();
     dispatch(unpublishedEntryPublishRequest(collection, slug, transactionID));
@@ -458,6 +460,7 @@ export function publishUnpublishedEntry(collection, slug) {
           }),
         );
         dispatch(unpublishedEntryPublished(collection, slug, transactionID));
+        dispatch(loadEntry(collections.get(collection), slug));
       })
       .catch(error => {
         dispatch(

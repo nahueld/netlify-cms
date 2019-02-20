@@ -3,6 +3,44 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.2.0](https://github.com/netlify/netlify-cms/tree/master/packages/netlify-cms-backend-github/compare/netlify-cms-backend-github@2.1.0...netlify-cms-backend-github@2.2.0) (2019-02-08)
+
+
+### Features
+
+* **workflow:** add deploy preview links ([#2028](https://github.com/netlify/netlify-cms/tree/master/packages/netlify-cms-backend-github/issues/2028)) ([15d221d](https://github.com/netlify/netlify-cms/tree/master/packages/netlify-cms-backend-github/commit/15d221d))
+
+
+
+
+
+# [2.1.0](https://github.com/netlify/netlify-cms/tree/master/packages/netlify-cms-backend-github/compare/netlify-cms-backend-github@2.0.9...netlify-cms-backend-github@2.1.0) (2018-11-12)
+
+
+### Features
+
+* allow custom logo on auth page ([#1818](https://github.com/netlify/netlify-cms/tree/master/packages/netlify-cms-backend-github/issues/1818)) ([c6ae1e8](https://github.com/netlify/netlify-cms/tree/master/packages/netlify-cms-backend-github/commit/c6ae1e8))
+
+
+
+
+
+<a name="2.0.9"></a>
+## [2.0.9](https://github.com/netlify/netlify-cms/tree/master/packages/netlify-cms-backend-github/compare/netlify-cms-backend-github@2.0.8...netlify-cms-backend-github@2.0.9) (2018-09-17)
+
+
+
+
+**Note:** Version bump only for package netlify-cms-backend-github
+
+<a name="2.0.8"></a>
+## [2.0.8](https://github.com/netlify/netlify-cms/tree/master/packages/netlify-cms-backend-github/compare/netlify-cms-backend-github@2.0.7...netlify-cms-backend-github@2.0.8) (2018-09-06)
+
+
+
+
+**Note:** Version bump only for package netlify-cms-backend-github
+
 <a name="2.0.7"></a>
 ## [2.0.7](https://github.com/netlify/netlify-cms/tree/master/packages/netlify-cms-backend-github/compare/netlify-cms-backend-github@2.0.6...netlify-cms-backend-github@2.0.7) (2018-08-27)
 

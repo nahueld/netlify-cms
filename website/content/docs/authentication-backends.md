@@ -4,13 +4,16 @@ weight: 25
 group: start
 ---
 
-Netlify CMS stores content in your GitHub, GitLab, or Bitbucket repository. In order for this to work, authenticate with your Git host. In most cases that requires a server. We have a few options for handling this.
+Netlify CMS stores content in your GitHub, GitLab, or Bitbucket repository. In order for this to work, it must authenticate with your Git host. In most cases that requires a server. We have a few options for handling this.
+
+
+**Note:** If you prefer to run your own authentication server, check out the section on [external OAuth clients](#external-oauth-clients).
 
 **Note:** Some static site generators have plugins for optimized integration with Netlify CMS, and starter templates may utilize these plugins. If you're using a starter template, read the template documentation before proceeding, as their instructions may differ.
 
 ## Git Gateway with Netlify Identity
 
-[Git Gateway](https://github.com/netlify/git-gateway) is a Netlify open source project that allows you to add editors to your site CMS without giving them direct write access to your GitHub or GitLab repository. (For Bitbucket repositories, use the [Bitbucket backend](#bitbucket-backend) instead.) [Netlify Identity](https://www.netlify.com/docs/identity/) service can handle the authentication and provides a simple interface for user management. The Netlify CMS [featured templates](../start-with-a-template) are working examples of this backend.
+[Git Gateway](https://github.com/netlify/git-gateway) is a Netlify open source project that allows you to add editors to your site CMS without giving them direct write access to your GitHub or GitLab repository. (For Bitbucket repositories, use the [Bitbucket backend](#bitbucket-backend) instead.) The [Netlify Identity](https://www.netlify.com/docs/identity/) service can handle the authentication and provides a simple interface for user management. The Netlify CMS [featured templates](../start-with-a-template) are working examples of this backend.
 
 To use it in your own project stored on GitHub or GitLab, follow these steps:
 
@@ -26,6 +29,10 @@ To use it in your own project stored on GitHub or GitLab, follow these steps:
     ```
 
 3. Optionally, you can assign roles to users in your Netlify dashboard, and then limit which roles can access the CMS by defining the `accept_roles` field as shown in the example above. Otherwise `accept_roles` can be left out, and all Netlify Identity users on your site have access.
+
+### Reconnect after Changing Repository Permissions
+
+If you change ownership on your repository, or convert a repository from public to private, you may need to reconnect Git Gateway with proper permissions. Find further instructions in the [Netlify Git Gateway docs](https://www.netlify.com/docs/git-gateway/#reconnect-after-changing-repository-permissions).
 
 ## Git Gateway without Netlify
 
@@ -50,7 +57,20 @@ To enable basic GitHub authentication:
       repo: owner-name/repo-name # Path to your GitHub repository
     ```
 
-If you prefer to run your own authentication server, check out the section on [external OAuth clients](#external-oauth-clients).
+### Specifying a status for deploy previews
+The GitHub backend supports [deploy preview links](../deploy-preview-links). Netlify CMS checks the
+`context` of a commit's [statuses](https://help.github.com/articles/about-status-checks/) and infers
+one that seems to represent a deploy preview. If you need to customize this behavior, you can
+specify which context to look for using `preview_context`:
+
+    ```yaml
+    backend:
+      name: github
+      repo: my/repo
+      preview_context: my-provider/deployment
+    ```
+
+The above configuration would look for the status who's `"context"` is `"my-provider/deployment"`.
 
 ## GitLab Backend
 
@@ -122,6 +142,16 @@ To enable it:
       repo: owner-name/repo-name # Path to your Bitbucket repository
     ```
 
+## Test Repo Backend
+You can use the `test-repo` backend to try out Netlify CMS without connecting to a Git repo. With this backend, you can write and publish content normally, but any changes will disapear when you reload the page. This backend powers the Netlify CMS [demo site](https://cms-demo.netlify.com/).
+
+To enable this backend, add the following lines to your Netlify CMS `config.yml` file:
+
+```
+backend:
+  name: test-repo
+```
+
 ## External OAuth Clients
 
 If you would like to facilitate your own OAuth authentication rather than use Netlify's service or implicit grant, you can use one of the community-maintained projects below. Feel free to [submit a pull request](https://github.com/netlify/netlify-cms/blob/master/CONTRIBUTING.md) if you'd like to add yours!
@@ -131,7 +161,9 @@ If you would like to facilitate your own OAuth authentication rather than use Ne
 | [@vencax](https://github.com/vencax)           | GitHub, GitHub Enterprise | Node.js                 | [Repo](https://github.com/vencax/netlify-cms-github-oauth-provider)                                                                          |
 | [@igk1972](https://github.com/igk1972)         | GitHub, GitHub Enterprise | Go                      | [Repo](https://github.com/igk1972/netlify-cms-oauth-provider-go)                                                                             |
 | [@davidejones](https://github.com/davidejones) | GitHub, GitHub Enterprise | Python                  | [Repo](https://github.com/davidejones/netlify-cms-oauth-provider-python)                                                                     |
+| [@marcelkornblum](https://github.com/marcelkornblum) | GitHub, GitHub Enterprise | Google AppEngine with Python                  | [Repo](https://github.com/signal-noise/netlify-cms-oauth-provider-python-appengine)                                                                  |
 | [@marksteele](https://github.com/marksteele)   | GitHub, GitHub Enterprise | Serverless              | [Repo](https://github.com/marksteele/netlify-serverless-oauth2-backend), [Blog](https://www.control-alt-del.org/blog/serverless-blog-howto/) |
+| [@Herohtar](https://github.com/Herohtar)       | GitHub, GitHub Enterprise | Firebase Cloud Function | [Repo](https://github.com/Herohtar/netlify-cms-oauth-firebase)                                                                               |
 
 Check each project's documentation for instructions on how to configure it.
 

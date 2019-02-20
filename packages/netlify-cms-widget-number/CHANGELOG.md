@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.1.1](https://github.com/netlify/netlify-cms/tree/master/packages/netlify-cms-widget-number/compare/netlify-cms-widget-number@2.1.0...netlify-cms-widget-number@2.1.1) (2019-02-12)
+
+
+### Bug Fixes
+
+* **widget-number:** fix empty value handling for number input ([#2077](https://github.com/netlify/netlify-cms/tree/master/packages/netlify-cms-widget-number/issues/2077)) ([be15015](https://github.com/netlify/netlify-cms/tree/master/packages/netlify-cms-widget-number/commit/be15015))
+
+
+
+
+
+# [2.1.0](https://github.com/netlify/netlify-cms/tree/master/packages/netlify-cms-widget-number/compare/netlify-cms-widget-number@2.0.5...netlify-cms-widget-number@2.1.0) (2019-02-08)
+
+
+### Features
+
+* **widget-number:** add range validation ([#2049](https://github.com/netlify/netlify-cms/tree/master/packages/netlify-cms-widget-number/issues/2049)) ([dc44cac](https://github.com/netlify/netlify-cms/tree/master/packages/netlify-cms-widget-number/commit/dc44cac))
+
+
+
+
+
 <a name="2.0.5"></a>
 ## [2.0.5](https://github.com/netlify/netlify-cms/tree/master/packages/netlify-cms-widget-number/compare/netlify-cms-widget-number@2.0.4...netlify-cms-widget-number@2.0.5) (2018-08-27)
 

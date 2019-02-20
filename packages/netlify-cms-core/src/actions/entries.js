@@ -1,4 +1,4 @@
-import { fromJS, List } from 'immutable';
+import { fromJS, List, Map } from 'immutable';
 import { actions as notifActions } from 'redux-notifications';
 import { serializeValues } from 'Lib/serializeEntryValues';
 import { currentBackend } from 'src/backend';
@@ -29,6 +29,7 @@ export const DRAFT_DISCARD = 'DRAFT_DISCARD';
 export const DRAFT_CHANGE = 'DRAFT_CHANGE';
 export const DRAFT_CHANGE_FIELD = 'DRAFT_CHANGE_FIELD';
 export const DRAFT_VALIDATION_ERRORS = 'DRAFT_VALIDATION_ERRORS';
+export const DRAFT_CLEAR_ERRORS = 'DRAFT_CLEAR_ERRORS';
 
 export const ENTRY_PERSIST_REQUEST = 'ENTRY_PERSIST_REQUEST';
 export const ENTRY_PERSIST_SUCCESS = 'ENTRY_PERSIST_SUCCESS';
@@ -208,11 +209,15 @@ export function changeDraftField(field, value, metadata) {
   };
 }
 
-export function changeDraftFieldValidation(field, errors) {
+export function changeDraftFieldValidation(uniquefieldId, errors) {
   return {
     type: DRAFT_VALIDATION_ERRORS,
-    payload: { field, errors },
+    payload: { uniquefieldId, errors },
   };
+}
+
+export function clearFieldErrors() {
+  return { type: DRAFT_CLEAR_ERRORS };
 }
 
 /*
@@ -369,13 +374,35 @@ export function traverseCollectionCursor(collection, action) {
 
 export function createEmptyDraft(collection) {
   return dispatch => {
-    const dataFields = {};
-    collection.get('fields', List()).forEach(field => {
-      dataFields[field.get('name')] = field.get('default');
-    });
+    const dataFields = createEmptyDraftData(collection.get('fields', List()));
     const newEntry = createEntry(collection.get('name'), '', '', { data: dataFields });
     dispatch(emptyDraftCreated(newEntry));
   };
+}
+
+function createEmptyDraftData(fields) {
+  return fields.reduce((acc, item) => {
+    const subfields = item.get('field') || item.get('fields');
+    const list = item.get('widget') == 'list';
+    const name = item.get('name');
+    const defaultValue = item.get('default', null);
+
+    if (List.isList(subfields)) {
+      acc[name] = list ? [createEmptyDraftData(subfields)] : createEmptyDraftData(subfields);
+      return acc;
+    }
+
+    if (Map.isMap(subfields)) {
+      acc[name] = list ? [createEmptyDraftData([subfields])] : createEmptyDraftData([subfields]);
+      return acc;
+    }
+
+    if (defaultValue !== null) {
+      acc[name] = defaultValue;
+    }
+
+    return acc;
+  }, {});
 }
 
 export function persistEntry(collection) {
@@ -424,7 +451,7 @@ export function persistEntry(collection) {
         dispatch(
           notifSend({
             message: {
-              key: 'ui.toast.missingRequiredField',
+              key: 'ui.toast.entrySaved',
             },
             kind: 'success',
             dismissAfter: 4000,

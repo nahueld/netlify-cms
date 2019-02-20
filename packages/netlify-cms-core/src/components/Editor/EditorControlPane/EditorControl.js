@@ -7,8 +7,10 @@ import { partial, uniqueId } from 'lodash';
 import { connect } from 'react-redux';
 import { colors, colorsRaw, transitions, lengths, borders } from 'netlify-cms-ui-default';
 import { resolveWidget, getEditorComponents } from 'Lib/registry';
+import { clearFieldErrors } from 'Actions/entries';
 import { addAsset } from 'Actions/media';
 import { query, clearSearch } from 'Actions/search';
+import { loadEntry } from 'Actions/entries';
 import {
   openMediaLibrary,
   removeInsertedMedia,
@@ -139,16 +141,21 @@ class EditorControl extends React.Component {
     removeInsertedMedia: PropTypes.func.isRequired,
     onValidate: PropTypes.func,
     processControlRef: PropTypes.func,
+    controlRef: PropTypes.func,
     query: PropTypes.func.isRequired,
     queryHits: PropTypes.oneOfType([PropTypes.array, PropTypes.object]),
     isFetching: PropTypes.bool,
     clearSearch: PropTypes.func.isRequired,
+    clearFieldErrors: PropTypes.func.isRequired,
+    loadEntry: PropTypes.func.isRequired,
     t: PropTypes.func.isRequired,
   };
 
   state = {
     activeLabel: false,
   };
+
+  uniqueFieldId = uniqueId(`${this.props.field.get('name')}-field-`);
 
   render() {
     const {
@@ -166,19 +173,23 @@ class EditorControl extends React.Component {
       removeInsertedMedia,
       onValidate,
       processControlRef,
+      controlRef,
       query,
       queryHits,
       isFetching,
       clearSearch,
+      clearFieldErrors,
+      loadEntry,
       t,
     } = this.props;
     const widgetName = field.get('widget');
     const widget = resolveWidget(widgetName);
     const fieldName = field.get('name');
     const fieldHint = field.get('hint');
-    const uniqueFieldId = uniqueId();
+    const isFieldOptional = field.get('required') === false;
+    const onValidateObject = onValidate;
     const metadata = fieldsMetaData && fieldsMetaData.get(fieldName);
-    const errors = fieldsErrors && fieldsErrors.get(fieldName);
+    const errors = fieldsErrors && fieldsErrors.get(this.uniqueFieldId);
     return (
       <ControlContainer>
         <ControlErrorsList>
@@ -197,9 +208,9 @@ class EditorControl extends React.Component {
             { [styles.labelActive]: this.state.styleActive },
             { [styles.labelError]: !!errors },
           )}
-          htmlFor={fieldName + uniqueFieldId}
+          htmlFor={this.uniqueFieldId}
         >
-          {field.get('label')}
+          {`${field.get('label', field.get('name'))}${isFieldOptional ? ' (optional)' : ''}`}
         </label>
         <Widget
           classNameWrapper={cx(
@@ -213,12 +224,12 @@ class EditorControl extends React.Component {
           classNameLabelActive={styles.labelActive}
           controlComponent={widget.control}
           field={field}
-          uniqueFieldId={uniqueFieldId}
+          uniqueFieldId={this.uniqueFieldId}
           value={value}
           mediaPaths={mediaPaths}
           metadata={metadata}
           onChange={(newValue, newMetadata) => onChange(fieldName, newValue, newMetadata)}
-          onValidate={onValidate && partial(onValidate, fieldName)}
+          onValidate={onValidate && partial(onValidate, this.uniqueFieldId)}
           onOpenMediaLibrary={openMediaLibrary}
           onClearMediaControl={clearMediaControl}
           onRemoveMediaControl={removeMediaControl}
@@ -230,12 +241,17 @@ class EditorControl extends React.Component {
           setInactiveStyle={() => this.setState({ styleActive: false })}
           resolveWidget={resolveWidget}
           getEditorComponents={getEditorComponents}
-          ref={processControlRef && partial(processControlRef, fieldName)}
+          ref={processControlRef && partial(processControlRef, field)}
+          controlRef={controlRef}
           editorControl={ConnectedEditorControl}
           query={query}
+          loadEntry={loadEntry}
           queryHits={queryHits}
           clearSearch={clearSearch}
+          clearFieldErrors={clearFieldErrors}
           isFetching={isFetching}
+          fieldsErrors={fieldsErrors}
+          onValidateObject={onValidateObject}
           t={t}
         />
         {fieldHint && (
@@ -262,7 +278,12 @@ const mapDispatchToProps = {
   removeInsertedMedia,
   addAsset,
   query,
+  loadEntry: (collectionName, slug) => (dispatch, getState) => {
+    const collection = getState().collections.get(collectionName);
+    return loadEntry(collection, slug)(dispatch, getState);
+  },
   clearSearch,
+  clearFieldErrors,
 };
 
 const ConnectedEditorControl = connect(

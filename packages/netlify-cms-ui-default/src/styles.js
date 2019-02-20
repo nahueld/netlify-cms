@@ -1,6 +1,17 @@
 import { css, injectGlobal } from 'react-emotion';
 
-export { fonts, colorsRaw, colors, lengths, components, buttons, shadows, borders, transitions };
+export {
+  fonts,
+  colorsRaw,
+  colors,
+  lengths,
+  components,
+  buttons,
+  shadows,
+  borders,
+  transitions,
+  reactSelectStyles,
+};
 
 /**
  * Font Stacks
@@ -87,7 +98,7 @@ const lengths = {
   richTextEditorMinHeight: '300px',
   borderWidth: '2px',
   topCardWidth: '682px',
-  pageMargin: '84px 18px',
+  pageMargin: '28px 18px',
 };
 
 const borders = {
@@ -295,6 +306,49 @@ const components = {
       background-color: ${colors.activeBackground};
     }
   `,
+};
+
+const reactSelectStyles = {
+  control: styles => ({
+    ...styles,
+    border: 0,
+    boxShadow: 'none',
+    padding: '9px 0 9px 12px',
+  }),
+  option: (styles, state) => ({
+    ...styles,
+    backgroundColor: state.isSelected
+      ? `${colors.active}`
+      : state.isFocused
+        ? `${colors.activeBackground}`
+        : 'transparent',
+    paddingLeft: '22px',
+  }),
+  menu: styles => ({ ...styles, right: 0, zIndex: 2 }),
+  container: styles => ({ ...styles, padding: '0 !important' }),
+  indicatorSeparator: (styles, state) =>
+    state.hasValue && state.selectProps.isClearable
+      ? { ...styles, backgroundColor: `${colors.textFieldBorder}` }
+      : { display: 'none' },
+  dropdownIndicator: styles => ({ ...styles, color: `${colors.controlLabel}` }),
+  clearIndicator: styles => ({ ...styles, color: `${colors.controlLabel}` }),
+  multiValue: styles => ({
+    ...styles,
+    backgroundColor: colors.background,
+  }),
+  multiValueLabel: styles => ({
+    ...styles,
+    color: colors.textLead,
+    fontWeight: 500,
+  }),
+  multiValueRemove: styles => ({
+    ...styles,
+    color: colors.controlLabel,
+    ':hover': {
+      color: colors.errorText,
+      backgroundColor: colors.errorBackground,
+    },
+  }),
 };
 
 injectGlobal`

@@ -10,6 +10,7 @@ injectGlobal`
 
   .notif__container {
     z-index: 10000;
+    white-space: pre-wrap;
   }
 `;
 
