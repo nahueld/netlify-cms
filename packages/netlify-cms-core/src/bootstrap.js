@@ -58,11 +58,13 @@ function bootstrap(opts = {}) {
     store.dispatch(mergeConfig(config));
   }
 
+  const locale = window.localStorage.getItem('locale') || 'en';
+
   /**
    * Create connected root component.
    */
   const Root = () => (
-    <I18n locale={'en'} messages={getPhrases()}>
+    <I18n locale={locale} messages={getPhrases(locale)}>
       <ErrorBoundary>
         <Provider store={store}>
           <ConnectedRouter history={history}>
